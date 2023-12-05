@@ -1,0 +1,63 @@
+{
+    // Replace "STM32F103C8" to your chip (chip name from Probe-rs)
+    // Replace "thumbv7m-none-eabi" to your target platfrom
+    // Replace "cmsis-dap.cfg" to your interface cfg of openocd
+    // Replace "rp2040.cfg" to your target cfg of openocd
+    // Replace "rp2040.svd" to your chip svd file
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Openocd Debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "./target/thumbv6m-none-eabi/debug/${fileBasenameNoExtension}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "openocd",
+            "svdPath": "./rp2040.svd",
+            "configFiles": [
+                "./cmsis-dap.cfg",
+                "./rp2040.cfg",
+            ],
+            "device": "RP2040",
+            "preLaunchTask": "OpenOcd Flash Debug",
+            "preLaunchCommands": [],
+            "postLaunchCommands": [
+                //    rtt tcp server port ↓    ↓ RTT Channel number
+                "monitor rtt server start 6666 0",
+                //you need to change   ↓  and  ↓ to the "SEGGER RTT" memory address in your memory
+                "monitor rtt setup 0x2003fbb8 100 \"SEGGER RTT\"",
+                "monitor rtt polling_interval 100",
+                "monitor rtt start",
+            ],
+        },
+        {
+            // this require vscode entension "Shell Debugger"
+            "type": "shell",
+            "cwd": "${workspaceFolder}",
+            "command": "",
+            "internalConsoleOptions": "openOnFirstSessionStart",
+            "request": "launch",
+            "name": "Defmt-print",
+            "preLaunchTask": "defmt print",
+            "presentation": {
+                "hidden": true,
+            }
+        },
+    ],
+    "compounds": [
+        {
+            "name": "OpenOCD Debug with Defmt",
+            "configurations": [
+                "Defmt-print",
+                "Openocd Debug",
+            ],
+            "stopAll": true,
+            "presentation": {
+                "hidden": false,
+                "group": "Debug",
+                "order": 0
+            }
+        }
+    ]
+}

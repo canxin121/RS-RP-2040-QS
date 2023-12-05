@@ -1,0 +1,131 @@
+{
+    // Replace "thumbv6m-none-eabi" to your target platfrom
+    // Replace "STM32F103C8" to your chip (chip name from Probe-rs)
+    // Replace "cmsis-dap.cfg" to your interface cfg of openocd
+    // Replace "rp2040.cfg" to your target cfg of openocd
+    // If you use sh script, Replace "defmt_print.bat" to "defmt_print.sh"
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "OpenOcd Flash Release",
+            "type": "shell",
+            "command": "openocd",
+            "args": [
+                "-f",
+                "./cmsis-dap.cfg",
+                "-f",
+                "./rp2040.cfg",
+                "-c",
+                "init; reset halt; program ./target/thumbv6m-none-eabi/release/${fileBasenameNoExtension} verify reset exit",
+            ],
+            "group": "build",
+            "dependsOn": [
+                "cargo build release",
+            ],
+        },
+        {
+            "label": "OpenOcd Flash Debug",
+            "type": "shell",
+            "command": "openocd",
+            "args": [
+                "-f",
+                "./cmsis-dap.cfg",
+                "-f",
+                "./rp2040.cfg",
+                "-c",
+                "init; reset halt; program ./target/thumbv6m-none-eabi/debug/${fileBasenameNoExtension} verify reset exit",
+            ],
+            "group": "build",
+            "dependsOn": [
+                "cargo build debug",
+            ],
+        },
+        {
+            "label": "OpenOcd Erase",
+            "type": "shell",
+            "command": "openocd",
+            "args": [
+                "-f",
+                "./cmsis-dap.cfg",
+                "-f",
+                "./rp2040.cfg",
+                "-c",
+                "init; reset halt; flash erase_sector 0 0 last; reset run; shutdown"
+            ],
+            "group": "none",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "close": true,
+                "clear": false
+            }
+        },
+        {
+            "label": "Cargo Size",
+            "type": "shell",
+            "command": "echo \"Size_of_Debug\";cargo size --bin ${fileBasenameNoExtension};echo \"Size_of_Release\"; cargo size --bin ${fileBasenameNoExtension} --release",
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "clear": false,
+            },
+            "dependsOn": [
+                "cargo build debug",
+                "cargo build release"
+            ]
+        },
+        {
+            "label": "defmt print",
+            "type": "shell",
+            "command": "${workspaceFolder}/defmt_print.bat",
+            "args": [
+                "./target/thumbv6m-none-eabi/debug/${fileBasenameNoExtension}"
+            ],
+            "group": "none",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "echo": true,
+                "close": true
+            },
+        },
+        {
+            "label": "Look for rtt",
+            "type": "shell",
+            "command": "rust-nm -S ./target/thumbv6m-none-eabi/debug/${fileBasenameNoExtension}| grep RTT",
+            "group": "none",
+        },
+        {
+            "label": "cargo build debug",
+            "type": "shell",
+            "command": "~/.cargo/bin/cargo", // note: full path to the cargo
+            "args": [
+                "build",
+                "--bin",
+                "${fileBasenameNoExtension}",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+        {
+            "label": "cargo build release",
+            "type": "shell",
+            "command": "~/.cargo/bin/cargo", // note: full path to the cargo
+            "args": [
+                "build",
+                "--release",
+                "--bin",
+                "${fileBasenameNoExtension}",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+    ]
+}

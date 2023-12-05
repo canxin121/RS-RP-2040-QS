@@ -1,0 +1,16 @@
+[package]
+name = "{{project-name}}"
+version = "0.1.0"
+authors = ["{{authors}}"]
+edition = "2021"
+
+[dependencies]
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.3"
+defmt = "0.3.5"
+defmt-rtt = "0.4.0"
+embedded-hal = "0.2.7"
+fugit = "0.3.7"
+panic-probe = "0.3.1"
+rp-pico = "0.8.0"
+rp2040-hal = {version="0.9.1",features=["chrono","critical-section-impl","defmt","rt"]}
